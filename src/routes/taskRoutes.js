@@ -7,6 +7,7 @@ const {
   updateTask,
   deleteTask,
 } = require("../controllers/taskController");
+const validateObjectId = require("../middleware/validateObjectId");
 
 /**
  * Task routes — maps HTTP method + path to the controller that handles it.
@@ -26,8 +27,11 @@ const router = express.Router();
 // Routes sharing the same path are grouped with .route() for readability.
 router.route("/").get(getTasks).post(createTask);
 
+// Every "/:id" route first runs validateObjectId, so a malformed id is rejected
+// with a 400 before any controller or database call.
 router
   .route("/:id")
+  .all(validateObjectId)
   .get(getTask)
   .put(updateTask)
   .patch(updateTask)

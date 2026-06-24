@@ -1,5 +1,6 @@
 const Task = require("../models/Task");
 const asyncHandler = require("../utils/asyncHandler");
+const AppError = require("../utils/AppError");
 
 /**
  * Task controllers — one function per REST action.
@@ -68,10 +69,7 @@ const getTask = asyncHandler(async (req, res) => {
   const task = await Task.findById(req.params.id);
 
   if (!task) {
-    return res.status(404).json({
-      success: false,
-      message: `No task found with id ${req.params.id}`,
-    });
+    throw new AppError(`No task found with id ${req.params.id}`, 404);
   }
 
   res.status(200).json({
@@ -96,10 +94,7 @@ const updateTask = asyncHandler(async (req, res) => {
   );
 
   if (!task) {
-    return res.status(404).json({
-      success: false,
-      message: `No task found with id ${req.params.id}`,
-    });
+    throw new AppError(`No task found with id ${req.params.id}`, 404);
   }
 
   res.status(200).json({
@@ -117,10 +112,7 @@ const deleteTask = asyncHandler(async (req, res) => {
   const task = await Task.findByIdAndDelete(req.params.id);
 
   if (!task) {
-    return res.status(404).json({
-      success: false,
-      message: `No task found with id ${req.params.id}`,
-    });
+    throw new AppError(`No task found with id ${req.params.id}`, 404);
   }
 
   res.status(200).json({
