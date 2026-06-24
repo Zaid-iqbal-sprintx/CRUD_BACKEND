@@ -1,11 +1,12 @@
 const express = require("express");
 
+const taskRoutes = require("./routes/taskRoutes");
+
 /**
  * Build and configure the Express application.
  *
  * Kept separate from server.js so the "app" (routes + middleware) is decoupled
- * from "starting the server" (listening on a port). Routes for tasks will be
- * mounted here in a later PR.
+ * from "starting the server" (listening on a port).
  */
 const app = express();
 
@@ -20,6 +21,9 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+// Task CRUD routes, all under /api/tasks
+app.use("/api/tasks", taskRoutes);
+
 // 404 handler — any route we did not define lands here.
 app.use((req, res) => {
   res.status(404).json({
@@ -30,11 +34,35 @@ app.use((req, res) => {
 
 // Central error handler — keeps error responses consistent across the app.
 // Express recognises this as an error handler because it takes 4 arguments.
+//
+// It also translates the Mongoose errors our controllers can throw into the
+// right HTTP status code, so callers get a 400 for bad input instead of a
+// blanket 500.
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(err.status || 500).json({
+  let status = err.status || 500;
+  let message = err.message || "Internal server error";
+
+  // Bad ObjectId in the URL, e.g. GET /api/tasks/not-a-real-id
+  if (err.name === "CastError") {
+    status = 400;
+    message = `Invalid ${err.path}: ${err.value}`;
+  }
+
+  // Schema validation failed (missing title, bad enum value, etc.).
+  // Collect every field's message into one readable string.
+  if (err.name === "ValidationError") {
+    status = 400;
+    message = Object.values(err.errors)
+      .map((e) => e.message)
+      .join(", ");
+  }
+
+  // Only log unexpected (server-side) errors; client mistakes are noise.
+  if (status >= 500) console.error(err.stack);
+
+  res.status(status).json({
     success: false,
-    message: err.message || "Internal server error",
+    message,
   });
 });
 
