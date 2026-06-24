@@ -1,0 +1,23 @@
+{
+  "name": "crud-backend",
+  "version": "1.0.0",
+  "description": "Task manager REST API — teaching project for API thinking (payloads, status codes, validation, DB structure)",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "keywords": [
+    "express",
+    "mongodb",
+    "rest-api",
+    "crud"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mongoose": "^8.5.1"
+  }
+}
