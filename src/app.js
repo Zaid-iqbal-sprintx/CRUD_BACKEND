@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 
 const taskRoutes = require("./routes/taskRoutes");
 
@@ -9,6 +10,11 @@ const taskRoutes = require("./routes/taskRoutes");
  * from "starting the server" (listening on a port).
  */
 const app = express();
+
+// Enable CORS so a browser frontend on a different origin (e.g. localhost:3000)
+// can call this API. By default all origins are allowed; set CORS_ORIGIN in
+// .env (e.g. "http://localhost:3000") to lock it down to a single origin.
+app.use(cors({ origin: process.env.CORS_ORIGIN || "*" }));
 
 // Parse incoming JSON request bodies into req.body
 app.use(express.json());

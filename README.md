@@ -22,6 +22,7 @@ npm install
 cp .env.example .env
 #    - PORT          (defaults to 5000 if unset; .env.example uses 5001)
 #    - MONGODB_URI   (your Atlas connection string)
+#    - CORS_ORIGIN   (allowed frontend origin; "*" or unset = allow all)
 
 # 3. Run
 npm run dev     # auto-restarts on file changes
@@ -38,6 +39,11 @@ Server runs at `http://localhost:5001` (or whatever `PORT` you set).
 ```
 http://localhost:5001/api
 ```
+
+### CORS
+CORS is enabled, so a browser frontend on a different origin can call the API.
+All origins are allowed by default; set `CORS_ORIGIN` in `.env` (e.g.
+`http://localhost:3000`) to restrict it to a single origin in production.
 
 ### Response envelope
 Every response uses the same shape, so clients can rely on it:
@@ -77,14 +83,14 @@ Validation errors add a per-field `errors` array:
 |---------------|---------|----------|------------|-------|
 | `title`       | string  | yes      | —          | trimmed, 1–120 chars |
 | `description` | string  | no       | `""`       | trimmed, ≤ 2000 chars |
-| `status`      | string  | no       | `todo`     | `todo` · `in-progress` · `completed` |
-| `priority`    | string  | no       | `medium`   | `low` · `medium` · `high` |
-| `dueDate`     | date    | no       | `null`     | ISO 8601 date string |
+| `status`      | string  | no       | `todo`     | `todo` · `in-progress` · `done` |
+| `priority`    | string  | no       | `medium`   | `low` · `medium` · `high` · `urgent` |
+| `due`         | date    | no       | `null`     | ISO 8601 date string |
 | `_id`         | string  | auto     | —          | MongoDB ObjectId |
 | `createdAt`   | date    | auto     | —          | set on create |
 | `updatedAt`   | date    | auto     | —          | updated on every change |
 
-Only `title`, `description`, `status`, `priority`, and `dueDate` can be set from
+Only `title`, `description`, `status`, `priority`, and `due` can be set from
 a request body — anything else (e.g. `_id`, `createdAt`) is ignored.
 
 ---
@@ -119,7 +125,7 @@ Content-Type: application/json
 ```
 Request body:
 ```json
-{ "title": "Write the README", "priority": "high", "dueDate": "2026-07-01" }
+{ "title": "Write the README", "priority": "high", "due": "2026-07-01" }
 ```
 `201 Created`:
 ```json
@@ -132,7 +138,7 @@ Request body:
     "description": "",
     "status": "todo",
     "priority": "high",
-    "dueDate": "2026-07-01T00:00:00.000Z",
+    "due": "2026-07-01T00:00:00.000Z",
     "createdAt": "2026-06-24T10:00:00.000Z",
     "updatedAt": "2026-06-24T10:00:00.000Z"
   }
@@ -152,8 +158,8 @@ curl -X POST localhost:5001/api/tasks \
 GET /api/tasks
 ```
 Optional filters (combine freely):
-- `?status=todo|in-progress|completed`
-- `?priority=low|medium|high`
+- `?status=todo|in-progress|done`
+- `?priority=low|medium|high|urgent`
 
 Returns newest first. `200 OK`:
 ```json
@@ -187,7 +193,7 @@ Content-Type: application/json
 ```
 Send only the fields you want to change (partial update):
 ```json
-{ "status": "completed" }
+{ "status": "done" }
 ```
 `200 OK`:
 ```json
@@ -197,7 +203,7 @@ Send only the fields you want to change (partial update):
 ```bash
 curl -X PATCH localhost:5001/api/tasks/6a3babd0168b13d3e1d7b3a5 \
   -H "Content-Type: application/json" \
-  -d '{"status":"completed"}'
+  -d '{"status":"done"}'
 ```
 
 ---

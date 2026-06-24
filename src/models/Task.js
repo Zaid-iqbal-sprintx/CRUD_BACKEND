@@ -27,26 +27,28 @@ const taskSchema = new mongoose.Schema(
     },
 
     // A small, fixed set of allowed values. Anything else is rejected.
+    // These mirror the frontend's Status options (To Do / In Progress / Done).
     status: {
       type: String,
       enum: {
-        values: ["todo", "in-progress", "completed"],
-        message: "Status must be one of: todo, in-progress, completed",
+        values: ["todo", "in-progress", "done"],
+        message: "Status must be one of: todo, in-progress, done",
       },
       default: "todo",
     },
 
+    // Mirrors the frontend's priority options (Low / Medium / High / Urgent).
     priority: {
       type: String,
       enum: {
-        values: ["low", "medium", "high"],
-        message: "Priority must be one of: low, medium, high",
+        values: ["low", "medium", "high", "urgent"],
+        message: "Priority must be one of: low, medium, high, urgent",
       },
       default: "medium",
     },
 
     // Optional deadline. Used later to flag a task as "overdue".
-    dueDate: {
+    due: {
       type: Date,
       default: null,
     },
