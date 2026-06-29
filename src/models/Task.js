@@ -52,6 +52,19 @@ const taskSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+
+    // Who owns the task. Stored as a small nested object so the frontend can
+    // render the name and a pre-computed avatar (initials) without a lookup.
+    assignee: {
+      name: { type: String, trim: true, default: "" },
+      initials: { type: String, trim: true, default: "" },
+    },
+
+    // Free-form labels shown as chips on the task card.
+    tags: {
+      type: [String],
+      default: [],
+    },
   },
   {
     // Automatically manage createdAt / updatedAt timestamps.
