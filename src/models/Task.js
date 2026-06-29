@@ -65,6 +65,17 @@ const taskSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+
+    // The user who owns this task. Set server-side from the authenticated
+    // user (never from the request body), and every query is scoped by it so
+    // users only ever see and touch their own tasks. Indexed because every
+    // list/read filters on it.
+    owner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "A task must have an owner"],
+      index: true,
+    },
   },
   {
     // Automatically manage createdAt / updatedAt timestamps.
