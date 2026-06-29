@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    name: Install + syntax check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      # No lint/test/build configured yet — at minimum validate that every
+      # source file parses (catches syntax errors before merge). Runs without a
+      # database connection.
+      - name: Syntax-check source files
+        run: find src -name '*.js' -print0 | xargs -0 -n1 node --check

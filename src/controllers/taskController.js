@@ -18,7 +18,15 @@ const AppError = require("../utils/AppError");
 
 // Only these fields may be set from a request body. Anything else the client
 // sends (e.g. _id, createdAt) is ignored, so callers can't overwrite internals.
-const ALLOWED_FIELDS = ["title", "description", "status", "priority", "due"];
+const ALLOWED_FIELDS = [
+  "title",
+  "description",
+  "status",
+  "priority",
+  "due",
+  "assignee",
+  "tags",
+];
 
 function pickAllowed(body = {}) {
   const out = {};
