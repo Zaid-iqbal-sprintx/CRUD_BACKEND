@@ -1,0 +1,27 @@
+{
+  "default_branch": "main",
+  "branches": [
+    "main",
+    "pr/8",
+    "pr4/setup",
+    "pr5/task-CRUD",
+    "pr6/api-handling",
+    "pr7"
+  ],
+  "parent": {
+    "main": null,
+    "pr/8": "main",
+    "pr4/setup": "main",
+    "pr5/task-CRUD": "main",
+    "pr6/api-handling": "main",
+    "pr7": "main"
+  },
+  "order": [
+    "main",
+    "pr/8",
+    "pr4/setup",
+    "pr5/task-CRUD",
+    "pr6/api-handling",
+    "pr7"
+  ]
+}

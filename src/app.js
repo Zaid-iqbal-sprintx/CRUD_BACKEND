@@ -2,6 +2,8 @@ const express = require("express");
 const cors = require("cors");
 
 const taskRoutes = require("./routes/taskRoutes");
+const authRoutes = require("./routes/authRoutes");
+const protect = require("./middleware/protect");
 
 /**
  * Build and configure the Express application.
@@ -27,8 +29,12 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// Task CRUD routes, all under /api/tasks
-app.use("/api/tasks", taskRoutes);
+// Auth routes (register/login are public; /me is protected internally).
+app.use("/api/auth", authRoutes);
+
+// Task CRUD routes, all under /api/tasks. `protect` runs first, so every task
+// endpoint requires a valid JWT — an anonymous request gets a 401, never data.
+app.use("/api/tasks", protect, taskRoutes);
 
 // 404 handler — any route we did not define lands here.
 app.use((req, res) => {

@@ -41,7 +41,9 @@ function pickAllowed(body = {}) {
  * Create a new task.
  */
 const createTask = asyncHandler(async (req, res) => {
-  const task = await Task.create(pickAllowed(req.body));
+  // Ownership comes from the authenticated user, never the request body, so a
+  // client can't create a task on someone else's behalf.
+  const task = await Task.create({ ...pickAllowed(req.body), owner: req.user._id });
 
   res.status(201).json({
     success: true,
@@ -52,10 +54,11 @@ const createTask = asyncHandler(async (req, res) => {
 
 /**
  * GET /api/tasks
- * List all tasks. Supports optional ?status= and ?priority= filters.
+ * List the authenticated user's tasks. Supports optional ?status= and
+ * ?priority= filters, always scoped to the owner.
  */
 const getTasks = asyncHandler(async (req, res) => {
-  const filter = {};
+  const filter = { owner: req.user._id };
   if (req.query.status) filter.status = req.query.status;
   if (req.query.priority) filter.priority = req.query.priority;
 
@@ -74,7 +77,9 @@ const getTasks = asyncHandler(async (req, res) => {
  * Fetch a single task by id.
  */
 const getTask = asyncHandler(async (req, res) => {
-  const task = await Task.findById(req.params.id);
+  // Scope by owner too: a task you don't own reads as "not found" (404, not
+  // 403) so we don't reveal that someone else's task exists.
+  const task = await Task.findOne({ _id: req.params.id, owner: req.user._id });
 
   if (!task) {
     throw new AppError(`No task found with id ${req.params.id}`, 404);
@@ -95,8 +100,9 @@ const getTask = asyncHandler(async (req, res) => {
  *   update can't slip past the same validation a create has to pass.
  */
 const updateTask = asyncHandler(async (req, res) => {
-  const task = await Task.findByIdAndUpdate(
-    req.params.id,
+  // Match on id AND owner so a user can only update their own task.
+  const task = await Task.findOneAndUpdate(
+    { _id: req.params.id, owner: req.user._id },
     pickAllowed(req.body),
     { new: true, runValidators: true }
   );
@@ -117,7 +123,8 @@ const updateTask = asyncHandler(async (req, res) => {
  * Remove a task.
  */
 const deleteTask = asyncHandler(async (req, res) => {
-  const task = await Task.findByIdAndDelete(req.params.id);
+  // Match on id AND owner so a user can only delete their own task.
+  const task = await Task.findOneAndDelete({ _id: req.params.id, owner: req.user._id });
 
   if (!task) {
     throw new AppError(`No task found with id ${req.params.id}`, 404);
